@@ -4,8 +4,33 @@ const enumStatus = [
     "rejected"
 ];
 
+export default function createExposedPromise() {
+    let __resolve, __reject;
+    let promise = new Promise((resolve, reject) => {
+        __resolve = resolve;
+        __reject = reject;
+    });
+
+    promise.resolve = __resolve;
+    promise.reject = __reject;
+    promise.status = 0;
+
+    return promise.then(
+        (data) => {
+            promise.status = 1;
+            return data;
+        },
+        (error) => {
+            promise.status = 2;
+            throw error;
+        }
+    );
+}
+
+
 // extending Promise works only with ES2016 class syntax.
-export default class ExposedPromise extends Promise {
+// Bug: promise.then() throws type error!
+class ExposedPromise extends Promise {
     constructor() {
         let resolve, reject;
         super((_resolve, _reject) => {
@@ -27,3 +52,4 @@ export default class ExposedPromise extends Promise {
 
     get statusStr() { return enumStatus[this.status]; }
 }
+
